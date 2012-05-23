@@ -1,6 +1,6 @@
 from db_code import get_db_session
 from models import *
-import insert
+import setup
 from direct.actor.Actor import Actor
 from panda3d.core import * 
 from pandac.PandaModules import * 
@@ -200,23 +200,20 @@ class Env(ShowBase):
             return coloursss 
             
         
-    def durations (self, inn_list):
+    def durations (self, inn_list=[]):#calcualation incorrect repetedly showing a single person,incorrect duration calclation.
       
          for aList1 in inn_list:
-	   if inn_list is not None :
-                for aList2 in inn_list:
+	   for aList2 in inn_list:
 		  
-                  if aList1.e_from == aList2.e_from and aList1 != aList2:
+                  if aList1.e_from == aList2.e_from and aList1 != aList2  and aList1.name == aList2.name:
                         a= aList1.duration
                         b= aList2.duration
                         a = a + b
                         aList1.duration = a
-                      
-                        #inn_list.delete(aList2)
-                        if inn_list is not None :
-			  inn_list = inn_list.remove(aList2)
+			inn_list.remove(aList2)
                         
         
+         
          return inn_list  
      
      
@@ -224,13 +221,12 @@ class Env(ShowBase):
         L1 = a
         L2 = []
         for l in L1:
-	  if l is not None :
-            for j in l:
+	  for j in l:
                 L2.append(j)
         a = L2
         for aList1 in a:
                 for aList2 in a:  
-                    if aList1.e_from == aList2.e_from and aList1 !=aList2:
+                    if aList1.e_from == aList2.e_from and aList1 !=aList2  and aList1.name == aList2.name:
                         x= aList1.duration
                         y= aList2.duration
                         x = x + y
@@ -252,7 +248,7 @@ class Env(ShowBase):
         p = L2
         for aList1 in p:
                 for aList2 in p:  
-                    if aList1.e_from == aList2.e_from and aList1 !=aList2:
+                    if aList1.e_from == aList2.e_from and aList1 !=aList2  and aList1.name == aList2.name:
                         x= aList1.duration
                         y= aList2.duration
                         x = x + y
@@ -280,11 +276,13 @@ class Application(DirectObject):
                   count = count + 1
                   name1 = v.name
                   center = e.center(name1, count)
-                  
+                  cntct_num = self.dbsession.query(Person).filter(Person.name == v.name )
+		  for i in cntct_num :
+		    cntct_num = i.phone_no
                   d=0
-                  calls = self.dbsession.query(Call).filter(Person.name == name1 )
-                  msg = self.dbsession.query(Msg).filter(Person.name == name1)
-                  email = self.dbsession.query(Email).filter(Person.name ==  name1)
+                  calls = self.dbsession.query(Call).filter(Call.e_from == cntct_num ).all()
+                  msg = self.dbsession.query(Msg).filter(Msg.e_from == cntct_num ).all()
+                  email = self.dbsession.query(Email).filter(Email.e_from ==  cntct_num ).all()
                   d = 1
                         #rmv_cal_dub_in = []
 		  calls_in_list = e.separate_in(calls)
@@ -330,7 +328,7 @@ class Application(DirectObject):
                   g = []
                   for item in in_merge:
                       for o in outt:
-                         if (cmp(int(item.e_from), int(o.e_from))) == 0:
+                         if ((cmp(int(item.e_from), int(o.e_from))) == 0)  and item.name== o.name :
                                         r = item 
                                         g = o
                                         NUM = item.name

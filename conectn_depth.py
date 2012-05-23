@@ -1,7 +1,7 @@
 #import direct.directbase.DirectStart
 from db_code import get_db_session
 from models import *
-import insert
+import setup
 from direct.interval.IntervalGlobal import *
 from panda3d.core import *
 from pandac.PandaModules import * 
@@ -69,8 +69,8 @@ class Env(ShowBase):
     if (self.centr == (0, 0, 0)):
       
       if self.c == 0:
-	self.distx = self.distx * self.depth
-	self.disty = self.disty * self.depth
+	self.distx = self.distx * self.depth * 2
+	self.disty = self.disty * self.depth * 2
 	self.c = 1
       k = self.distx * (math.sin(int(i) * 45 ))
       y = self.disty * (math.cos(int(i) * 45 ))
@@ -194,7 +194,7 @@ class Env(ShowBase):
   def durations (self, inn_list=[]):
          for aList1 in inn_list:
                 for aList2 in inn_list:
-                    if aList1.e_from == aList2.e_from and aList1 !=aList2:
+                    if aList1.e_from == aList2.e_from and aList1 !=aList2 and aList1.name == aList2.name :
                         a= aList1.duration
                         b= aList2.duration
                         a = a + b
@@ -212,7 +212,7 @@ class Env(ShowBase):
         a = L2
         for aList1 in a:
                 for aList2 in a:  
-                    if aList1.e_from==aList2.e_from and aList1 !=aList2:
+                    if aList1.e_from==aList2.e_from and aList1 !=aList2 and aList1.name == aList2.name :
                         x= aList1.duration
                         y= aList2.duration
                         x = x + y
@@ -234,7 +234,7 @@ class Env(ShowBase):
         p = L2
         for aList1 in p:
                 for aList2 in p:  
-                    if aList1.e_from==aList2.e_from and aList1 !=aList2:
+                    if aList1.e_from==aList2.e_from and aList1 !=aList2 and aList1.name == aList2.name :
                         x= aList1.duration
                         y= aList2.duration
                         x = x + y
@@ -263,10 +263,13 @@ class Env(ShowBase):
 		 #calls = v['calls'],
                  #msg = v['messges'],
                  #email = v['emails'],
-     
-      calls = self.dbsession.query(Call).filter(Person.name == k )
-      msg = self.dbsession.query(Msg).filter(Person.name == k)
-      email = self.dbsession.query(Email).filter(Person.name ==  k)
+      
+      cntct_num = self.dbsession.query(Person).filter(Person.name == k )
+      for i in cntct_num :
+	  cntct_num = i.phone_no
+      calls = self.dbsession.query(Call).filter( Call.e_from == cntct_num ).all()
+      msg = self.dbsession.query(Msg).filter( Msg.e_from == cntct_num ).all()
+      email = self.dbsession.query(Email).filter(Email.e_from ==  cntct_num ).all()
       d = 1 
    
       calls_in_list = self.separate_in(calls)
@@ -313,7 +316,7 @@ class Env(ShowBase):
       K = 1
       for item in in_merge:
 	    for o in outt:
-		if (cmp(int(item.e_from), int(o.e_from))) == 0:
+		if ((cmp(int(item.e_from), int(o.e_from))) == 0)  and item.name== o.name :
                         r = item
                         g = o
                         NUM = item.name

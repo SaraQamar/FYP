@@ -1,6 +1,6 @@
 from db_code import get_db_session
 from models import *
-import insert
+import setup
 from panda3d.core import *
 from pandac.PandaModules import *
 from direct.gui.DirectGui import *
@@ -178,7 +178,7 @@ class Env(ShowBase):
                    
                  in_list.append(a)
         return in_list
-        exit()        
+              
     def separate_out (self, callss):
     #...data ...seperate outgoing
         oout_list = []
@@ -188,7 +188,7 @@ class Env(ShowBase):
                    
         return oout_list
         
-        exit()
+       
         
             
     def colours (self, a):
@@ -230,37 +230,31 @@ class Env(ShowBase):
             return coloursss 
             
         
-    def durations (self, inn_list):
+    def durations (self, inn_list=[]):
       
-         for aList1 in inn_list:
-	   if inn_list is not None :
+	 for aList1 in inn_list:
                 for aList2 in inn_list:
-		  
-                  if aList1.e_from == aList2.e_from and aList1 != aList2:
+                    if aList1.e_from==aList2.e_from and aList1 !=aList2 and aList1.name == aList2.name:
+			
                         a= aList1.duration
                         b= aList2.duration
                         a = a + b
                         aList1.duration = a
-                      
-                        #inn_list.delete(aList2)
-                        if inn_list is not None :
-			  inn_list = inn_list.remove(aList2)
-                        
+                        inn_list.remove(aList2)
         
-         return inn_list  
-     
+	 return inn_list 
      
     def merge (self, a=[]):
         L1 = a
         L2 = []
         for l in L1:
-	  if l is not None :
+	  #if l is not None :
             for j in l:
                 L2.append(j)
         a = L2
         for aList1 in a:
                 for aList2 in a:  
-                    if aList1.e_from == aList2.e_from and aList1 !=aList2:
+                    if aList1.e_from == aList2.e_from and aList1 !=aList2 and aList1.name == aList2.name:
                         x= aList1.duration
                         y= aList2.duration
                         x = x + y
@@ -273,7 +267,7 @@ class Env(ShowBase):
                         a.remove(aList2)          
         return a 
                   
-    def merge_out (self, p):
+    def merge_out (self, p=[]):
         L1 = p
         L2 = []
         for l in L1:
@@ -282,7 +276,7 @@ class Env(ShowBase):
         p = L2
         for aList1 in p:
                 for aList2 in p:  
-                    if aList1.e_from == aList2.e_from and aList1 !=aList2:
+                    if aList1.e_from == aList2.e_from and aList1 !=aList2 and aList1.name == aList2.name:
                         x= aList1.duration
                         y= aList2.duration
                         x = x + y
@@ -304,15 +298,18 @@ class Application(DirectObject):
         self.dbsession = get_db_session()
         V = self.dbsession.query(Person).count()         
         rname = raw_input("Enter person name : ")
+        cntct_num = self.dbsession.query(Person).filter(Person.name == rname )
+        for i in cntct_num :
+	  cntct_num = i.phone_no
         
         center = e.center(rname, count)
         calls = []
         msg = []
         email = []
         d=0
-        calls = self.dbsession.query(Call).filter(Person.name == rname )
-        msg = self.dbsession.query(Msg).filter(Person.name == rname)
-        email = self.dbsession.query(Email).filter(Person.name ==  rname)
+        calls = self.dbsession.query(Call).filter( Call.e_from == cntct_num ).all()
+        msg = self.dbsession.query(Msg).filter( Msg.e_from == cntct_num ).all()
+        email = self.dbsession.query(Email).filter( Email.e_from ==  cntct_num ).all()
         d = 1
                         #rmv_cal_dub_in = []
 	calls_in_list = e.separate_in(calls)
@@ -358,7 +355,7 @@ class Application(DirectObject):
         g = []
         for item in in_merge:
             for o in outt:
-                if (cmp(int(item.e_from), int(o.e_from))) == 0:
+                if ((cmp(int(item.e_from), int(o.e_from))) == 0) and item.name== o.name :
                       r = item 
                       g = o
 		      NUM = item.name
